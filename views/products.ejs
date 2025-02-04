@@ -1,0 +1,18 @@
+<%- include('home') %>
+<h1>Lista produktów</h1>
+
+<% if (isAdmin) { %>
+    <a href="/addProduct">Dodaj produkt</a>
+<% } %>
+
+
+<ul>
+    <% products.forEach(product => { %>
+        <li>
+            <a href="/product/<%= product.id %>">
+                <img src="<%= product.image_url %>" width="100">
+                <strong><%= product.name %></strong> - <%= product.price %> zł
+            </a>
+        </li>
+    <% }) %>
+</ul>

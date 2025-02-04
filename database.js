@@ -126,4 +126,41 @@ async function registerAdmin(username='admin123', password='admin123', roles = [
     }
 }
 
-module.exports = {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin };
+
+// Pobieranie wszystkich produktów
+async function getAllProducts() {
+    try {
+        const result = await pool.query('SELECT * FROM products');
+        return result.rows;
+    } catch (error) {
+        console.error('Błąd pobierania produktów:', error);
+        return [];
+    }
+}
+
+// Pobieranie jednego produktu po ID
+async function getProductById(productId) {
+    try {
+        const result = await pool.query('SELECT * FROM products WHERE id = $1', [productId]);
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('Błąd pobierania produktu:', error);
+        return null;
+    }
+}
+
+// Dodawanie nowego produktu
+async function addProduct(name, description, price, imageUrl) {
+    try {
+        const result = await pool.query(
+            'INSERT INTO products (name, description, price, image_url) VALUES ($1, $2, $3, $4) RETURNING *',
+            [name, description, price, imageUrl]
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error('Błąd dodawania produktu:', error);
+        return null;
+    }
+}
+
+module.exports = {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct };

@@ -2,7 +2,7 @@ var http = require('http');
 var authorize = require('./authorize')  
 var express = require('express');
 var cookieParser = require('cookie-parser');
-var { registerUser, loginUser, getUserRoles,editUserRoles, changeUserPassword, registerAdmin } = require('./database');
+var {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct } = require('./database');
 
 var app = express();
 
@@ -126,6 +126,62 @@ app.get( '/admin', authorize('admin'), (req, res) => {
     res.write('witaj administratorze');
     res.end();
 })
+
+
+// Strona listy produktów
+app.get('/products', async (req, res) => {
+    let role = [];
+    let isAdmin = false; // Dodajemy zmienną do sprawdzenia roli admina
+    
+    if (req.signedCookies.user) {
+        role = await getUserRoles(req.signedCookies.user);
+        // Sprawdzamy, czy wśród ról użytkownika jest "admin"
+        if (role.includes('admin')) {
+            isAdmin = true;
+        }
+    }
+    
+    const products = await getAllProducts();
+    res.render('products', { products, user: req.signedCookies.user || null, role, isAdmin });
+});
+
+
+// Strona konkretnego produktu
+app.get('/product/:id', async (req, res) => {
+    const product = await getProductById(req.params.id);
+    if (!product) {
+        return res.status(404).send('Produkt nie znaleziony');
+    }
+    res.render('product', { product, user: req.signedCookies.user || null });
+});
+
+// Strona dodawania produktu (tylko dla adminów)
+app.get('/addProduct', authorize('admin'), (req, res) => {
+    res.render('addProduct', { user: req.signedCookies.user });
+});
+
+// Obsługa dodawania produktu
+app.post('/addProduct', authorize('admin'), async (req, res) => {
+    const { name, description, price, imageUrl } = req.body;
+    if (!name || !price) {
+        return res.render('addProduct', {
+            message: "Nazwa i cena są wymagane.",
+            user: req.signedCookies.user
+        });
+    }
+
+    const newProduct = await addProduct(name, description, price, imageUrl);
+    if (newProduct) {
+        res.redirect('/products');
+    } else {
+        res.render('addProduct', {
+            message: "Błąd dodawania produktu.",
+            user: req.signedCookies.user
+        });
+    }
+});
+
+
 
 http.createServer(app).listen(3000);
 console.log( 'serwer działa, nawiguj do http://localhost:3000' );

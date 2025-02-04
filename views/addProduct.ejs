@@ -1,0 +1,22 @@
+<%- include('home') %>
+<h1>Dodaj produkt</h1>
+<% if ( locals.message ) { %>
+    <div class='message'>
+        <%= locals.message %>
+    </div>
+<% } %>
+<form method="POST">
+    <label>Nazwa:</label>
+    <input type="text" name="name" required>
+    
+    <label>Opis:</label>
+    <textarea name="description"></textarea>
+    
+    <label>Cena:</label>
+    <input type="number" step="0.01" name="price" required>
+    
+    <label>URL obrazka:</label>
+    <input type="text" name="imageUrl">
+    
+    <button type="submit">Dodaj produkt</button>
+</form>
