@@ -5,8 +5,8 @@ const bcrypt = require('bcrypt');
 const pool = new Pool({
     user: 'postgres',       // Zmień, jeśli masz inną nazwę użytkownika
     host: 'localhost',
-    database: 'usersdb',    // Nazwa bazy danych
-    password: '90603888', // Twoje hasło do PostgreSQL
+    database: 'users',    // Nazwa bazy danych
+    password: 'newpassword', // Twoje hasło do PostgreSQL
     port: 5432,
 });
 
@@ -150,11 +150,11 @@ async function getProductById(productId) {
 }
 
 // Dodawanie nowego produktu
-async function addProduct(name, description, price, imageUrl) {
+async function addProduct(name, description, price, imageUrl, quantity) {
     try {
         const result = await pool.query(
-            'INSERT INTO products (name, description, price, image_url) VALUES ($1, $2, $3, $4) RETURNING *',
-            [name, description, price, imageUrl]
+            'INSERT INTO products (name, description, price, image_url, quantity) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [name, description, price, imageUrl, quantity]  
         );
         return result.rows[0];
     } catch (error) {
@@ -163,4 +163,29 @@ async function addProduct(name, description, price, imageUrl) {
     }
 }
 
-module.exports = {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct };
+// Modyfikacja produktu
+async function updateProduct(id, name, description, price, imageUrl, quantity) {
+    try {
+        const result = await pool.query(
+            'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4, quantity = $5 WHERE id = $6 RETURNING *',
+            [name, description, price, imageUrl, quantity, id]
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error('Błąd edytowania produktu:', error);
+        return null;
+    }
+}
+
+// Usuwanie produktu
+async function deleteProduct(id) {
+    try {
+        const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
+        return result.rows.length > 0;
+    } catch (error) {
+        console.error('Błąd usuwania produktu:', error);
+        return false;
+    }
+}
+
+module.exports = {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct };

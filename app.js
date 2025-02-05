@@ -2,7 +2,7 @@ var http = require('http');
 var authorize = require('./authorize')  
 var express = require('express');
 var cookieParser = require('cookie-parser');
-var {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct } = require('./database');
+var {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct } = require('./database');
 
 var app = express();
 
@@ -162,15 +162,15 @@ app.get('/addProduct', authorize('admin'), (req, res) => {
 
 // Obsługa dodawania produktu
 app.post('/addProduct', authorize('admin'), async (req, res) => {
-    const { name, description, price, imageUrl } = req.body;
-    if (!name || !price) {
+    const { name, description, price, imageUrl, quantity } = req.body;  
+    if (!name || !price || !quantity) {  
         return res.render('addProduct', {
-            message: "Nazwa i cena są wymagane.",
+            message: "Nazwa, cena i ilość są wymagane.",
             user: req.signedCookies.user
         });
     }
 
-    const newProduct = await addProduct(name, description, price, imageUrl);
+    const newProduct = await addProduct(name, description, price, imageUrl, quantity);  
     if (newProduct) {
         res.redirect('/products');
     } else {
@@ -181,6 +181,35 @@ app.post('/addProduct', authorize('admin'), async (req, res) => {
     }
 });
 
+// Strona edycji produktu (tylko dla adminów)
+app.get('/editProduct/:id', authorize('admin'), async (req, res) => {
+    const product = await getProductById(req.params.id);
+    if (!product) {
+        return res.status(404).send('Produkt nie znaleziony');
+    }
+    res.render('editProduct', { product, user: req.signedCookies.user });
+});
+
+// Obsługa edycji produktu
+app.post('/editProduct/:id', authorize('admin'), async (req, res) => {
+    const { name, description, price, imageUrl, quantity } = req.body;
+    const updatedProduct = await updateProduct(req.params.id, name, description, price, imageUrl, quantity);
+    if (updatedProduct) {
+        res.redirect('/products');
+    } else {
+        res.render('editProduct', { message: "Błąd edytowania produktu.", product: req.body });
+    }
+});
+
+// Obsługa usuwania produktu
+app.post('/deleteProduct/:id', authorize('admin'), async (req, res) => {
+    const deleted = await deleteProduct(req.params.id);
+    if (deleted) {
+        res.redirect('/products');
+    } else {
+        res.status(500).send('Błąd usuwania produktu');
+    }
+});
 
 
 http.createServer(app).listen(3000);
