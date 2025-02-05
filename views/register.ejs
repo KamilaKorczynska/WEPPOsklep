@@ -1,64 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Document</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejestracja - Sklep Online</title>
     <style>
-    html, body, form {
-        height: 100%;
-        overflow: hidden;
-    }
-    form {
-        display : flex;
-        justify-content : center;
-        align-items : center;
-    }
-    #login {
-        padding : 20px;
-        border : 1px solid black;
-    }
-    #login div {
-        overflow : auto;
-    }
-    #login input {
-        float : right;
-    }
-    button {
-        clear : both;
-    }
+        /* Stylizacja dla całej strony */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
 
-    .message {
-        color : red;
-    }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+
+        /* Formularz rejestracji */
+        #register-form {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            max-width: 100%;
+            text-align: center;
+        }
+
+        #register-form h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #register-form input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #register-form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        #register-form button:hover {
+            background-color: #555;
+        }
+
+        .message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .login-link {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .login-link a {
+            color: #333;
+            text-decoration: none;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
     </style>
 </head>
 <body>
-    <form method="POST">
-    <div id='login'>
-        <div>
-        Rejestracjia
-        </div>
-        <div>
-            <input type='text' name='txtUser' />
-            <label>Nazwa użytkownika:</label>
-        </div>
-        <div>
-            <input type='password' name='txtPwd1' />
-            <label>Hasło:</label>
-        </div>
-        <div>
-            <input type='password' name='txtPwd2' />
-        <label>Powtórz hasło:</label>
-        </div>
-        <div>
-            <button>Zarejestruj się</button>
-        </div>
-        <% if ( locals.message ) { %>
-            <div class='message'>
-                <%= locals.message %>
+
+    <!-- Formularz rejestracji -->
+    <div id="register-form">
+        <h2>Rejestracja</h2>
+        <form method="POST">
+            <div>
+                <input type="text" name="txtUser" placeholder="Nazwa użytkownika" required />
             </div>
-        <% } %>
+            <div>
+                <input type="password" name="txtPwd1" placeholder="Hasło" required />
+            </div>
+            <div>
+                <input type="password" name="txtPwd2" placeholder="Powtórz hasło" required />
+            </div>
+            <div>
+                <button type="submit">Zarejestruj się</button>
+            </div>
+
+            <% if (locals.message) { %>
+                <div class="message">
+                    <%= locals.message %>
+                </div>
+            <% } %>
+
+            <div class="login-link">
+                <label>Masz już konto? </label><a href="/login">Zaloguj się</a>
+            </div>
+        </form>
     </div>
-    </form>
+
 </body>
 </html>

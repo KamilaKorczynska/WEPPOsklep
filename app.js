@@ -80,7 +80,7 @@ app.get( '/logout', authorize(), (req, res) => {
 });
 
 // Strona konta
-app.get('/account', async (req, res) => {
+app.get('/account', authorize(), async (req, res) => {
     let role = [];
     if (req.signedCookies.user) {
         role = await getUserRoles(req.signedCookies.user);
@@ -114,19 +114,6 @@ app.post('/changePassword', authorize(), async (req, res) => {
 });
 
 
-// wymaga logowania dlatego strażnik – middleware „authorize”
-app.get('/app', authorize(), async (req, res) => {
-    let roles = await getUserRoles(req.user);
-    res.render('app', { user: req.user, roles });
-});
-
-// strona tylko dla administratora
-app.get( '/admin', authorize('admin'), (req, res) => {
-    res.setHeader('Content-type', 'text/html; charset=utf-8');
-    res.write('witaj administratorze');
-    res.end();
-})
-
 
 // Strona listy produktów
 app.get('/products', async (req, res) => {
@@ -148,20 +135,37 @@ app.get('/products', async (req, res) => {
 
 // Strona konkretnego produktu
 app.get('/product/:id', async (req, res) => {
+    let role = [];
+    let isAdmin = false; // Dodajemy zmienną do sprawdzenia roli admina
+    
+    if (req.signedCookies.user) {
+        role = await getUserRoles(req.signedCookies.user);
+        // Sprawdzamy, czy wśród ról użytkownika jest "admin"
+        if (role.includes('admin')) {
+            isAdmin = true;
+        }
+    }
+
     const product = await getProductById(req.params.id);
     if (!product) {
         return res.status(404).send('Produkt nie znaleziony');
     }
-    res.render('product', { product, user: req.signedCookies.user || null });
+    res.render('product', { product, user: req.signedCookies.user || null, role, isAdmin });
 });
 
 // Strona dodawania produktu (tylko dla adminów)
-app.get('/addProduct', authorize('admin'), (req, res) => {
-    res.render('addProduct', { user: req.signedCookies.user });
+app.get('/addProduct', authorize('admin'), async (req, res) => {
+
+    if (req.signedCookies.user) {
+        role = await getUserRoles(req.signedCookies.user);
+    }
+
+    res.render('addProduct', { user: req.signedCookies.user || null, role });
 });
 
 // Obsługa dodawania produktu
 app.post('/addProduct', authorize('admin'), async (req, res) => {
+    
     const { name, description, price, imageUrl, quantity } = req.body;  
     if (!name || !price || !quantity) {  
         return res.render('addProduct', {
@@ -183,11 +187,16 @@ app.post('/addProduct', authorize('admin'), async (req, res) => {
 
 // Strona edycji produktu (tylko dla adminów)
 app.get('/editProduct/:id', authorize('admin'), async (req, res) => {
+
+    if (req.signedCookies.user) {
+        role = await getUserRoles(req.signedCookies.user);
+    }
+    
     const product = await getProductById(req.params.id);
     if (!product) {
         return res.status(404).send('Produkt nie znaleziony');
     }
-    res.render('editProduct', { product, user: req.signedCookies.user });
+    res.render('editProduct', { product, user: req.signedCookies.user || null, role });
 });
 
 // Obsługa edycji produktu

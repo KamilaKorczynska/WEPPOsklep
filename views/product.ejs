@@ -1,6 +1,146 @@
-<%- include('home') %>
-<h1><%= product.name %></h1>
-<img src="<%= product.image_url %>" width="300">
-<p><%= product.description %></p>
-<p><strong>Cena:</strong> <%= product.price %> zł</p>
-<a href="/products">Powrót do listy</a>
+<%- include('header') %>
+
+<!-- Strzałka powrotu do listy produktów -->
+<a href="/products" class="back-to-list">
+    ⬅️
+</a>
+
+<!-- Główna treść produktu -->
+<div class="product-details">
+    <div class="product-image">
+        <img src="<%= product.image_url %>" alt="<%= product.name %>" class="product-img">
+    </div>
+
+    <div class="product-info">
+        <h1 class="product-title"><%= product.name %></h1>
+        <p class="product-description"><%= product.description %></p>
+        <p class="product-price"><strong>Cena:</strong> <%= product.price %> zł</p>
+        <p class="product-quantity"><strong>Dostępna ilość:</strong> <%= product.quantity %></p>
+
+        <% if (isAdmin) { %>
+            <div class="admin-actions">
+                <a href="/editProduct/<%= product.id %>" class="btn edit-btn">Edytuj</a>
+                <form action="/deleteProduct/<%= product.id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="btn delete-btn">Usuń</button>
+                </form>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<!-- Stylowanie -->
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Link Powrotu do listy produktów */
+    .back-to-list {
+        display: inline-block;
+        position: absolute;
+        top: 80px; /* Zwiększamy wartość, aby strzałka była niżej */
+        left: 20px;
+        font-size: 30px;  /* Większa czcionka dla strzałki */
+        color: #333;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+    .back-to-list:hover {
+        color: #3498db;  /* Zmiana koloru na niebieski przy najechaniu */
+    }
+
+    /* Główna sekcja produktu */
+    .product-details {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 40px 0;
+        padding: 0 20px;
+    }
+
+    /* Obrazek produktu */
+    .product-image {
+        flex: 1;
+        max-width: 500px;
+        margin-right: 30px;
+        text-align: center;
+    }
+
+    .product-img {
+        width: 100%;
+        height: auto;
+        max-width: 400px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Informacje o produkcie */
+    .product-info {
+        flex: 2;
+        max-width: 600px;
+        text-align: left;
+    }
+
+    .product-title {
+        font-size: 32px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .product-description {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 20px;
+    }
+
+    .product-price {
+        font-size: 20px;
+        color: #2ecc71;
+        margin-bottom: 15px;
+    }
+
+    .product-quantity {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 25px;
+    }
+
+    /* Przycisk Edytuj i Usuń */
+    .admin-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        text-decoration: none;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .edit-btn {
+        background-color: #3498db;
+    }
+
+    .edit-btn:hover {
+        background-color: #2980b9;
+    }
+
+    .delete-btn {
+        background-color: #e74c3c;
+        border: none;
+    }
+
+    .delete-btn:hover {
+        background-color: #c0392b;
+    }
+</style>

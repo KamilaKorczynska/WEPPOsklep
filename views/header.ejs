@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sklep Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Nawigacja */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 15px 30px;
+            color: white;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+        }
+
+        .logo:hover {
+            opacity: 0.8;
+        }
+
+        .account {
+            font-size: 16px;
+        }
+
+        .account a {
+            color: white;
+            text-decoration: none;
+            margin-left: 15px;
+        }
+
+        .account a:hover {
+            text-decoration: underline;
+        }
+
+        .admin-label {
+            font-size: 14px;
+            color: #ffcc00; /* Kolor dla admina */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nawigacja -->
+    <nav class="navbar">
+        <a href="/" class="logo">🛒 Sklep Online</a>
+        <div class="account">
+            <% if (user) { %>
+                <% if (role && role.includes('admin')) { %>
+                    <span class="admin-label">(admin) </span>
+                <% } %>
+                <span><%= user %></span>
+                <a href="/account">Moje konto</a>
+                <a href="/logout">Wyloguj się</a>
+            <% } else { %>
+                <a href="/login">Zaloguj się</a>
+            <% } %>
+        </div>
+    </nav>
+
+</body>
+</html>
