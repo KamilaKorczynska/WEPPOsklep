@@ -1,0 +1,23 @@
+<%- include('home') %>
+<h1>Edit Product</h1>
+<% if (locals.message) { %>
+    <div class="message"><%= locals.message %></div>
+<% } %>
+<form method="POST">
+    <label>Name:</label>
+    <input type="text" name="name" value="<%= product.name %>" required>
+    
+    <label>Description:</label>
+    <textarea name="description"><%= product.description %></textarea>
+    
+    <label>Price:</label>
+    <input type="number" name="price" value="<%= product.price %>" step="0.01" required>
+    
+    <label>Image URL:</label>
+    <input type="text" name="imageUrl" value="<%= product.image_url %>">
+    
+    <label>Quantity:</label>
+    <input type="number" name="quantity" value="<%= product.quantity %>" required>
+
+    <button type="submit">Save Changes</button>
+</form>

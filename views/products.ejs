@@ -12,7 +12,14 @@
             <a href="/product/<%= product.id %>">
                 <img src="<%= product.image_url %>" width="100">
                 <strong><%= product.name %></strong> - <%= product.price %> zł
+                <p>Available: <%= product.quantity %></p> 
             </a>
+            <% if (isAdmin) { %>
+                <a href="/editProduct/<%= product.id %>">Edit</a> | 
+                <form action="/deleteProduct/<%= product.id %>" method="POST" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            <% } %>
         </li>
     <% }) %>
 </ul>

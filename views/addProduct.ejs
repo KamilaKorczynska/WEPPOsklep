@@ -13,10 +13,13 @@
     <textarea name="description"></textarea>
     
     <label>Cena:</label>
-    <input type="number" step="0.01" name="price" required>
+    <input type="number" step="0.01" min = "0.01" name="price" required>
     
     <label>URL obrazka:</label>
     <input type="text" name="imageUrl">
     
+    <label>Ilość:</label>
+    <input type="number" name="quantity" min = "0" step = "1" value="0" required>
+
     <button type="submit">Dodaj produkt</button>
 </form>
