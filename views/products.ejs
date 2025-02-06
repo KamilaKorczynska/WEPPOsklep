@@ -1,25 +1,168 @@
-<%- include('home') %>
-<h1>Lista produktów</h1>
+<%- include('header') %>
 
 <% if (isAdmin) { %>
-    <a href="/addProduct">Dodaj produkt</a>
+    <a href="/addProduct" class="add-product-btn">Dodaj produkt</a>
 <% } %>
+<!-- Nagłówek -->
+<h1>Lista produktów</h1>
 
-
-<ul>
+<!-- Lista produktów -->
+<div class="products-grid">
     <% products.forEach(product => { %>
-        <li>
-            <a href="/product/<%= product.id %>">
-                <img src="<%= product.image_url %>" width="100">
-                <strong><%= product.name %></strong> - <%= product.price %> zł
-                <p>Available: <%= product.quantity %></p> 
+        <div class="product-card">
+            <a href="/product/<%= product.id %>" class="product-link">
+                <img src="<%= product.image_url %>" alt="<%= product.name %>" class="product-image">
+                <div class="product-info">
+                    <strong class="product-name"><%= product.name %></strong>
+                    <span class="product-price"><%= product.price %> zł</span>
+                </div>
             </a>
             <% if (isAdmin) { %>
-                <a href="/editProduct/<%= product.id %>">Edit</a> | 
-                <form action="/deleteProduct/<%= product.id %>" method="POST" style="display:inline;">
-                    <button type="submit">Delete</button>
-                </form>
+                <div class="admin-actions">
+                    <a href="/editProduct/<%= product.id %>" class="btn edit-btn">Edytuj</a> 
+                    <form action="/deleteProduct/<%= product.id %>" method="POST" style="display:inline;">
+                        <button type="submit" class="btn delete-btn">Usuń</button>
+                    </form>
+                </div>
             <% } %>
-        </li>
+        </div>
     <% }) %>
-</ul>
+</div>
+
+<!-- Stylowanie produktów -->
+<style>
+    .view-cart-btn {
+        display: block;
+        text-align: center;
+        margin: 20px auto;
+        background-color: #3498db;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+    .view-cart-btn:hover {
+        background-color: #2980b9;
+    }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Nagłówek */
+    h1 {
+        text-align: center;
+        margin: 30px 0;
+    }
+
+    /* Przycisk Dodaj produkt */
+    .add-product-btn {
+        display: block;
+        text-align: center;
+        margin: 20px auto;
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+
+    .add-product-btn:hover {
+        background-color: #555;
+    }
+
+    /* Siatka produktów */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 0 20px;
+    }
+
+    .product-card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .product-link {
+        display: block;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .product-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .product-info {
+        padding: 15px;
+        text-align: center;
+    }
+
+    .product-name {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .product-price {
+        font-size: 16px;
+        color: #555;
+    }
+
+    /* Styl przycisków Edytuj i Usuń */
+    .admin-actions {
+        padding: 15px;
+        text-align: center;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .btn {
+        padding: 8px 15px;
+        font-size: 16px;
+        color: white;
+        border-radius: 5px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    /* Styl dla przycisku Edytuj */
+    .edit-btn {
+        background-color: #3498db;
+    }
+
+    .edit-btn:hover {
+        background-color: #2980b9;
+    }
+
+    /* Styl dla przycisku Usuń */
+    .delete-btn {
+        background-color: #e74c3c;
+        border: none;
+    }
+
+    .delete-btn:hover {
+        background-color: #c0392b;
+    }
+</style>

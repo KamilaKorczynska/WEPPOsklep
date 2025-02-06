@@ -1,0 +1,54 @@
+<%- include('header') %>
+
+<h1>Twój Koszyk</h1>
+<div class="cart-container">
+    <% if (!cartItems || cartItems.length === 0) { %>
+        <p>Twój koszyk jest pusty.</p>
+    <% } else { %>
+        <ul>
+            <% cartItems.forEach(item => { %>
+                <li>
+                    <strong><%= item.name %></strong> - <%= item.quantity %> szt.
+                    (Cena: <%= item.price %> zł)
+                    <form action="/cart/delete" method="POST" style="display:inline;">
+                        <input type="hidden" name="product_id" value="<%= item.id %>">
+                        <button type="submit">Usuń</button>
+                    </form>
+                </li>
+            <% }) %>
+        </ul>
+        <p><strong>Łączna cena: 
+            <%= cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) %> zł</strong>
+        </p>
+    <% } %>
+</div>
+
+
+<style>
+    .cart-container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        margin-bottom: 10px;
+    }
+    button {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #c0392b;
+    }
+</style>
