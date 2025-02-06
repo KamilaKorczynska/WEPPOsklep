@@ -11,4 +11,3 @@ VALUES ('all', '$2b$12$W5RMyW7B25oTjjZPbyIym.eoRxx0ehAfz/pWlE1K1HF.9HHj2FVnK', A
 
 SELECT * FROM users;
 
-ALTER TABLE products ADD COLUMN quantity INT DEFAULT 0;
