@@ -5,8 +5,8 @@ const bcrypt = require('bcrypt');
 const pool = new Pool({
     user: 'postgres',       // Zmień, jeśli masz inną nazwę użytkownika
     host: 'localhost',
-    database: 'usersdb',    // Nazwa bazy danych
-    password: '90603888', // Twoje hasło do PostgreSQL
+    database: 'users',    // Nazwa bazy danych
+    password: 'newpassword', // Twoje hasło do PostgreSQL
     port: 5432,
 });
 
@@ -126,4 +126,124 @@ async function registerAdmin(username='admin123', password='admin123', roles = [
     }
 }
 
-module.exports = {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin };
+
+// Pobieranie wszystkich produktów
+async function getAllProducts() {
+    try {
+        const result = await pool.query('SELECT * FROM products');
+        return result.rows;
+    } catch (error) {
+        console.error('Błąd pobierania produktów:', error);
+        return [];
+    }
+}
+
+// Pobieranie jednego produktu po ID
+async function getProductById(productId) {
+    try {
+        const result = await pool.query('SELECT * FROM products WHERE id = $1', [productId]);
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('Błąd pobierania produktu:', error);
+        return null;
+    }
+}
+
+// Dodawanie nowego produktu
+async function addProduct(name, description, price, imageUrl, quantity) {
+    try {
+        const result = await pool.query(
+            'INSERT INTO products (name, description, price, image_url, quantity) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [name, description, price, imageUrl, quantity]  
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error('Błąd dodawania produktu:', error);
+        return null;
+    }
+}
+
+// Modyfikacja produktu
+async function updateProduct(id, name, description, price, imageUrl, quantity) {
+    try {
+        const result = await pool.query(
+            'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4, quantity = $5 WHERE id = $6 RETURNING *',
+            [name, description, price, imageUrl, quantity, id]
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error('Błąd edytowania produktu:', error);
+        return null;
+    }
+}
+
+// Usuwanie produktu
+async function deleteProduct(id) {
+    try {
+        const result = await pool.query('DELETE FROM products WHERE id = $1 RETURNING *', [id]);
+        return result.rows.length > 0;
+    } catch (error) {
+        console.error('Błąd usuwania produktu:', error);
+        return false;
+    }
+}
+
+async function addToCart(userId, productId, quantity) {
+    const existingItem = await pool.query(
+        `SELECT * FROM cart WHERE user_id = $1 AND product_id = $2`,
+        [userId, productId]
+    );
+
+    console.log('Existing Cart Item:', existingItem.rows); 
+    if (existingItem.rows.length > 0) {
+        await pool.query(
+            `UPDATE cart SET quantity = quantity + $1 WHERE user_id = $2 AND product_id = $3`,
+            [quantity, userId, productId]
+        );
+    } else {
+        await pool.query(
+            `INSERT INTO cart (user_id, product_id, quantity) VALUES ($1, $2, $3)`,
+            [userId, productId, quantity]
+        );
+    }
+    return true;
+    
+}
+
+
+async function getUserCart(userId) {
+    const result = await pool.query(
+        `SELECT c.id, c.quantity, p.name, p.price
+            FROM cart c
+            JOIN products p ON c.product_id = p.id
+            WHERE c.user_id = $1`,
+        [userId]
+    );
+    return result.rows;
+}
+
+async function updateCartItem(userId, productId, quantity) {
+    if (quantity > 0) {
+        await pool.query(
+            `UPDATE cart SET quantity = $1 WHERE user_id = $2 AND product_id = $3`,
+            [quantity, userId, productId]
+        );
+    } else {
+        await pool.query(
+            `DELETE FROM cart WHERE user_id = $1 AND product_id = $2`,
+            [userId, productId]
+        );
+    }
+    return true;
+}
+
+async function removeFromCart(userId, productId) {
+    await pool.query(
+        `DELETE FROM cart WHERE user_id = $1 AND product_id = $2`,
+        [userId, productId]
+    );
+    return true;
+}
+
+
+module.exports = { registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, removeFromCart, getUserCart };
