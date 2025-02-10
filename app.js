@@ -2,7 +2,10 @@ var http = require('http');
 var authorize = require('./authorize')  
 var express = require('express');
 var cookieParser = require('cookie-parser');
-var {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, getUserCart, addToCart } = require('./database');
+var {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, getUserCart, addToCart, getUserByUsername, updateCartItem, removeFromCart 
+        , getCartItemById
+
+} = require('./database');
 
 var app = express();
 
@@ -220,73 +223,71 @@ app.post('/deleteProduct/:id', authorize('admin'), async (req, res) => {
     }
 });
 
-// Display the cart page
-app.get('/cart', async (req, res) => {
-    const userId = req.signedCookies.user;  
-    console.log('User ID:', userId);  
-    if (!userId) {
-        return res.render('cart', {
-            message: 'Musisz być zalogowany, aby zobaczyć swój koszyk.',
-            cartItems: [],
-            user: null,
-            role: null
-        });
+app.post('/cart/add', authorize(), async (req, res) => {
+    const { product_id } = req.body;
+    const user = await getUserByUsername(req.signedCookies.user);
+    
+    if (!user) {
+        return res.redirect('/login');
     }
 
-    let role = null;
-    if (req.signedCookies.user) {
-        role = await getUserRoles(req.signedCookies.user);
+    const product = await getProductById(product_id);
+
+    try {
+        await addToCart(user.id, product_id, 1);
+        res.redirect('/cart');
+    } catch (error) {
+        return res.status(400).send(error.message);
     }
-
-    const cartItems = await getUserCart(userId);
-    console.log('Cart Items:', cartItems); 
-
-    res.render('cart', {
-        user: req.signedCookies.user,  
-        role,
-        cartItems,
-        message: cartItems.length === 0 ? 'Twój koszyk jest pusty.' : null
-    });
 });
 
 
-app.post('/cart/add', authorize(), async (req, res) => {
-    const userId = req.signedCookies.user;  
-    const { product_id, quantity } = req.body;
 
-    const addedProduct = await addToCart(userId, product_id, parseInt(quantity) || 1);
 
-    if (addedProduct) {
-        return res.redirect('/cart'); 
-    } else {
-        return res.status(500).send('Błąd dodawania produktu do koszyka');
+
+app.get('/cart', async (req, res) => {
+    try {
+        const user = await getUserByUsername(req.signedCookies.user);
+        
+        if (!user) {
+            return res.redirect('/login');
+        }
+        const cartItems = await getUserCart(user.id); 
+        res.render('cart', { cartItems, user: user.username, role: user.roles });
+    } catch (err) {
+        console.error('Error fetching cart items:', err);
+        res.render('cart', { cartItems: [], user: null, role: null }); 
     }
 });
 
 app.post('/cart/update', authorize(), async (req, res) => {
-    const userId = req.signedCookies.user;  
-    const { product_id, quantity } = req.body;
-
-    const updatedItem = await updateCartItem(userId, product_id, parseInt(quantity));
-
-    if (updatedItem) {
-        return res.redirect('/cart'); 
-    } else {
-        return res.status(500).send('Błąd aktualizacji produktu w koszyku');
+    const { cartItemId, quantity } = req.body;
+    
+    const cartItem = await getCartItemById(cartItemId);
+    const product = await getProductById(cartItem.product_id);
+    
+    if (quantity > product.quantity) {
+        return res.status(400).send('Nie możesz zamówić więcej, niż jest dostępne w magazynie');
     }
+    
+    const updatedItem = await updateCartItem(cartItemId, quantity);
+    
+    if (!updatedItem) {
+        return res.status(500).send('Błąd aktualizacji koszyka');
+    }
+
+    res.redirect('/cart');
 });
 
-app.post('/cart/delete', authorize(), async (req, res) => {
-    const userId = req.signedCookies.user;  
-    const { product_id } = req.body;
+app.post('/cart/remove', authorize(), async (req, res) => {
+    const { cartItemId } = req.body; // pobieramy ID przedmiotu
+    const success = await removeFromCart(cartItemId);
 
-    const removedItem = await removeFromCart(userId, product_id);
-
-    if (removedItem) {
-        return res.redirect('/cart');  
-    } else {
-        return res.status(500).send('Błąd usuwania produktu z koszyka');
+    if (!success) {
+        return res.status(500).send('Błąd usuwania przedmiotu z koszyka');
     }
+
+    res.redirect('/cart');
 });
 
 

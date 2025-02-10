@@ -138,13 +138,29 @@ async function getAllProducts() {
     }
 }
 
-// Pobieranie jednego produktu po ID
 async function getProductById(productId) {
     try {
-        const result = await pool.query('SELECT * FROM products WHERE id = $1', [productId]);
+        const result = await pool.query(
+            'SELECT * FROM products WHERE id = $1',
+            [productId]
+        );
         return result.rows[0] || null;
     } catch (error) {
         console.error('Błąd pobierania produktu:', error);
+        return null;
+    }
+}
+
+
+async function getCartItemById(cartItemId) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM cart WHERE id = $1',
+            [cartItemId]
+        );
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('Błąd pobierania przedmiotu z koszyka:', error);
         return null;
     }
 }
@@ -188,62 +204,124 @@ async function deleteProduct(id) {
     }
 }
 
-async function addToCart(userId, productId, quantity) {
-    const existingItem = await pool.query(
-        `SELECT * FROM cart WHERE user_id = $1 AND product_id = $2`,
-        [userId, productId]
-    );
 
-    console.log('Existing Cart Item:', existingItem.rows); 
-    if (existingItem.rows.length > 0) {
-        await pool.query(
-            `UPDATE cart SET quantity = quantity + $1 WHERE user_id = $2 AND product_id = $3`,
-            [quantity, userId, productId]
+async function addToCart(userId, productId, quantity = 1) {
+    try {
+        const existingCartItem = await pool.query(
+            'SELECT * FROM cart WHERE user_id = $1 AND product_id = $2',
+            [userId, productId]
         );
-    } else {
-        await pool.query(
-            `INSERT INTO cart (user_id, product_id, quantity) VALUES ($1, $2, $3)`,
-            [userId, productId, quantity]
+
+        const product = await pool.query(
+            'SELECT * FROM products WHERE id = $1',
+            [productId]
         );
+
+        if (existingCartItem.rows.length > 0) {
+            const currentQuantity = existingCartItem.rows[0].quantity;
+            const newQuantity = currentQuantity + quantity;
+
+            if (newQuantity > product.rows[0].quantity) {
+                throw new Error('Nie możesz dodać więcej, niż jest dostępne w magazynie');
+            }
+
+            await pool.query(
+                'UPDATE cart SET quantity = $1 WHERE user_id = $2 AND product_id = $3',
+                [newQuantity, userId, productId]
+            );
+        } else {
+            if (quantity > product.rows[0].quantity) {
+                throw new Error('Nie możesz dodać więcej, niż jest dostępne w magazynie');
+            }
+
+            const query = 'INSERT INTO cart (user_id, product_id, quantity) VALUES ($1, $2, $3)';
+            const values = [userId, productId, quantity];
+            await pool.query(query, values);
+        }
+    } catch (err) {
+        console.error("Error adding to cart:", err);
+        throw err; 
     }
-    return true;
-    
 }
+
 
 
 async function getUserCart(userId) {
-    const result = await pool.query(
-        `SELECT c.id, c.quantity, p.name, p.price
-            FROM cart c
-            JOIN products p ON c.product_id = p.id
-            WHERE c.user_id = $1`,
-        [userId]
-    );
-    return result.rows;
-}
-
-async function updateCartItem(userId, productId, quantity) {
-    if (quantity > 0) {
-        await pool.query(
-            `UPDATE cart SET quantity = $1 WHERE user_id = $2 AND product_id = $3`,
-            [quantity, userId, productId]
+    try {
+        const result = await pool.query(
+            `SELECT 
+                cart.id, 
+                cart.quantity, 
+                products.name, 
+                products.price 
+             FROM cart
+             JOIN products ON cart.product_id = products.id
+             WHERE cart.user_id = $1`,
+            [userId]
         );
-    } else {
-        await pool.query(
-            `DELETE FROM cart WHERE user_id = $1 AND product_id = $2`,
-            [userId, productId]
-        );
+        return result.rows;
+    } catch (error) {
+        console.error('Error fetching cart items:', error);
+        return [];
     }
-    return true;
 }
 
-async function removeFromCart(userId, productId) {
-    await pool.query(
-        `DELETE FROM cart WHERE user_id = $1 AND product_id = $2`,
-        [userId, productId]
+async function updateCartItem(cartItemId, quantity) {
+    const cartItem = await pool.query(
+        'SELECT * FROM cart WHERE id = $1',
+        [cartItemId]
     );
-    return true;
+    
+    const product = await pool.query(
+        'SELECT * FROM products WHERE id = $1',
+        [cartItem.rows[0].product_id]
+    );
+    
+    if (quantity > product.rows[0].quantity) {
+        return null; // Brak wystarczającej ilości, nie aktualizuj
+    }
+
+    try {
+        const result = await pool.query(
+            'UPDATE cart SET quantity = $1 WHERE id = $2 RETURNING *',
+            [quantity, cartItemId]
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error('Błąd aktualizacji przedmiotu w koszyku:', error);
+        return null;
+    }
 }
 
 
-module.exports = { registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, removeFromCart, getUserCart };
+// Funkcja usuwająca przedmiot z koszyka
+async function removeFromCart(cartItemId) {
+    try {
+        const result = await pool.query(
+            'DELETE FROM cart WHERE id = $1',
+            [cartItemId]
+        );
+        return result.rowCount > 0; // Jeśli usunięto co najmniej jeden rekord
+    } catch (error) {
+        console.error('Błąd usuwania przedmiotu z koszyka:', error);
+        return false;
+    }
+}
+
+
+async function getUserByUsername(username) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM users WHERE username = $1',
+            [username]
+        );
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('Błąd pobierania użytkownika:', error);
+        return null;
+    }
+}
+
+module.exports = { registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, getUserCart, getUserByUsername,removeFromCart
+    ,getCartItemById
+ };
