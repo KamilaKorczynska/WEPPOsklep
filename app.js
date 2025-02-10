@@ -2,7 +2,7 @@ var http = require('http');
 var authorize = require('./authorize')  
 var express = require('express');
 var cookieParser = require('cookie-parser');
-var {pool, registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, getUserCart, addToCart, getUserByUsername, updateCartItem, removeFromCart 
+var {pool,updateProductQuantity, registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, getUserCart, addToCart, getUserByUsername, updateCartItem, removeFromCart 
         , getCartItemById
 
 } = require('./database');
@@ -348,18 +348,41 @@ app.post('/order', authorize(), async (req, res) => {
         // Pobranie koszyka użytkownika
         const cartItems = await getUserCart(user.id);
         
+        // Sprawdzenie, czy są produkty w koszyku
+        if (cartItems.length === 0) {
+            return res.status(400).json({ message: "Twój koszyk jest pusty!" });
+        }
+
         // Przechowywanie zamówienia w bazie danych
         const result = await pool.query(
             "INSERT INTO orders (user_id, first_name, last_name, email, phone, address, payment_method) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
             [user.id, firstName, lastName, email, phone, address, paymentMethod]
         );
 
-        // Aktualizacja produktów na 'sprzedane' w bazie
+        // Id zamówienia, które zostało dodane
+        const orderId = result.rows[0].id;
+
+        // Aktualizacja produktów na 'sprzedane' oraz zmniejszenie ilości w magazynie
         for (const item of cartItems) {
-            await pool.query(
-                "UPDATE products SET sold = true WHERE id = $1",
-                [item.id]
-            );
+            // Zaktualizuj ilość produktu w magazynie
+            const product = await getProductById(item.product_id);
+            const newQuantity = product.quantity - item.quantity;
+
+            if (newQuantity < 0) {
+                console.error(`Brak wystarczającej ilości produktu o ID ${item.product_id}`);
+                return res.status(400).json({ message: `Brak wystarczającej ilości produktu: ${product.name}` });
+            }
+
+            // Zaktualizuj produkt w bazie danych
+            const updatedProduct = await updateProduct(item.product_id, product.name, product.description, product.price, product.image_url, newQuantity);
+
+            if (!updatedProduct) {
+                console.error(`Nie udało się zaktualizować produktu o ID ${item.product_id}`);
+                return res.status(500).json({ message: "Błąd aktualizacji produktu w magazynie" });
+            }
+
+            // Możesz również dodać szczegóły zamówienia do bazy danych, np. w tabeli `order_items`
+            // await pool.query("INSERT INTO order_items (order_id, product_id, quantity) VALUES ($1, $2, $3)", [orderId, item.product_id, item.quantity]);
         }
 
         // Usuwanie przedmiotów z koszyka po złożeniu zamówienia
@@ -372,6 +395,10 @@ app.post('/order', authorize(), async (req, res) => {
         res.status(500).json({ message: "Błąd serwera" });
     }
 });
+
+
+
+
 
 
 

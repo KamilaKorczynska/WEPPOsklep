@@ -19,34 +19,3 @@ CREATE TABLE products (
     price DECIMAL(10,2) NOT NULL,
     image_url TEXT
 );
-ALTER TABLE products ADD COLUMN quantity INT DEFAULT 0;
-ALTER TABLE products ADD COLUMN sold BOOLEAN DEFAULT false;
-
-
-CREATE TABLE cart (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    product_id INT REFERENCES products(id) ON DELETE CASCADE,
-    quantity INT DEFAULT 1,
-    UNIQUE(user_id, product_id)
-);
-
-CREATE TABLE orders (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    first_name VARCHAR(100) NOT NULL,
-    last_name VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    phone VARCHAR(20) NOT NULL,
-    address TEXT NOT NULL,
-    payment_method VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE order_items (
-    id SERIAL PRIMARY KEY,
-    order_id INT REFERENCES orders(id) ON DELETE CASCADE,
-    product_id INT REFERENCES products(id) ON DELETE CASCADE,
-    quantity INT NOT NULL,
-    price DECIMAL(10,2) NOT NULL
-);

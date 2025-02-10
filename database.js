@@ -207,6 +207,7 @@ async function deleteProduct(id) {
 
 async function addToCart(userId, productId, quantity = 1) {
     try {
+        // Sprawdzamy, czy w koszyku jest już ten produkt
         const existingCartItem = await pool.query(
             'SELECT * FROM cart WHERE user_id = $1 AND product_id = $2',
             [userId, productId]
@@ -217,6 +218,7 @@ async function addToCart(userId, productId, quantity = 1) {
             [productId]
         );
 
+        // Sprawdzamy, czy nie dodajemy więcej niż dostępne w magazynie
         if (existingCartItem.rows.length > 0) {
             const currentQuantity = existingCartItem.rows[0].quantity;
             const newQuantity = currentQuantity + quantity;
@@ -225,15 +227,18 @@ async function addToCart(userId, productId, quantity = 1) {
                 throw new Error('Nie możesz dodać więcej, niż jest dostępne w magazynie');
             }
 
+            // Aktualizujemy ilość w koszyku, jeśli produkt już istnieje
             await pool.query(
                 'UPDATE cart SET quantity = $1 WHERE user_id = $2 AND product_id = $3',
                 [newQuantity, userId, productId]
             );
         } else {
+            // Jeśli produkt nie istnieje w koszyku, dodajemy go
             if (quantity > product.rows[0].quantity) {
                 throw new Error('Nie możesz dodać więcej, niż jest dostępne w magazynie');
             }
 
+            // Dodajemy produkt do koszyka
             const query = 'INSERT INTO cart (user_id, product_id, quantity) VALUES ($1, $2, $3)';
             const values = [userId, productId, quantity];
             await pool.query(query, values);
@@ -246,6 +251,7 @@ async function addToCart(userId, productId, quantity = 1) {
 
 
 
+
 async function getUserCart(userId) {
     try {
         const result = await pool.query(
@@ -253,7 +259,8 @@ async function getUserCart(userId) {
                 cart.id, 
                 cart.quantity, 
                 products.name, 
-                products.price 
+                products.price, 
+                products.id AS product_id  -- Dodajemy ID produktu
              FROM cart
              JOIN products ON cart.product_id = products.id
              WHERE cart.user_id = $1`,
@@ -265,6 +272,7 @@ async function getUserCart(userId) {
         return [];
     }
 }
+
 
 async function updateCartItem(cartItemId, quantity) {
     const cartItem = await pool.query(
@@ -292,6 +300,7 @@ async function updateCartItem(cartItemId, quantity) {
         return null;
     }
 }
+
 
 
 // Funkcja usuwająca przedmiot z koszyka
@@ -322,6 +331,21 @@ async function getUserByUsername(username) {
     }
 }
 
-module.exports = { pool, registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, getUserCart, getUserByUsername,removeFromCart
+// Modyfikacja ilości produktu
+async function updateProductQuantity(id, quantity) {
+    try {
+        const result = await pool.query(
+            'UPDATE products SET quantity = quantity - $1 WHERE id = $2 AND quantity >= $1 RETURNING *',
+            [quantity, id]
+        );
+        return result.rows[0];
+    } catch (error) {
+        console.error('Błąd aktualizacji ilości produktu:', error);
+        return null;
+    }
+}
+
+
+module.exports = { pool,updateProductQuantity, registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, getUserCart, getUserByUsername,removeFromCart
     ,getCartItemById
  };
