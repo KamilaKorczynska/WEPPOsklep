@@ -6,6 +6,7 @@ var {pool, registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassw
         , getCartItemById
 
 } = require('./database');
+const router = express.Router();
 
 var app = express();
 
@@ -307,6 +308,72 @@ app.post('/cart/remove', authorize(), async (req, res) => {
 
     res.redirect('/cart');
 });
+
+
+// Endpoint do wyświetlania formularza zakupu
+app.get('/checkout', authorize(), async (req, res) => {
+    try {
+        const user = await getUserByUsername(req.signedCookies.user);
+        if (!user) {
+            return res.redirect('/login');
+        }
+
+        // Pobranie koszyka użytkownika
+        const cartItems = await getUserCart(user.id);
+        
+        // Obliczenie całkowitej ceny
+        let totalPrice = 0;
+        cartItems.forEach(item => {
+            totalPrice += item.price * item.quantity;
+        });
+
+        res.render('checkout', { cartItems, totalPrice, user: user.username });
+    } catch (error) {
+        console.error("Błąd przy pobieraniu koszyka:", error);
+        res.status(500).send("Błąd pobierania koszyka");
+    }
+});
+
+
+// Endpoint do przyjmowania zamówienia
+app.post('/order', authorize(), async (req, res) => {
+    const { firstName, lastName, email, phone, address, paymentMethod } = req.body;
+
+    try {
+        const user = await getUserByUsername(req.signedCookies.user);
+        if (!user) {
+            return res.redirect('/login');
+        }
+
+        // Pobranie koszyka użytkownika
+        const cartItems = await getUserCart(user.id);
+        
+        // Przechowywanie zamówienia w bazie danych
+        const result = await pool.query(
+            "INSERT INTO orders (user_id, first_name, last_name, email, phone, address, payment_method) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+            [user.id, firstName, lastName, email, phone, address, paymentMethod]
+        );
+
+        // Aktualizacja produktów na 'sprzedane' w bazie
+        for (const item of cartItems) {
+            await pool.query(
+                "UPDATE products SET sold = true WHERE id = $1",
+                [item.id]
+            );
+        }
+
+        // Usuwanie przedmiotów z koszyka po złożeniu zamówienia
+        await pool.query("DELETE FROM cart WHERE user_id = $1", [user.id]);
+
+        // Przekierowanie po zakończeniu zamówienia
+        res.redirect('/home');
+    } catch (error) {
+        console.error("Błąd składania zamówienia:", error);
+        res.status(500).json({ message: "Błąd serwera" });
+    }
+});
+
+
 
 
 http.createServer(app).listen(3000);

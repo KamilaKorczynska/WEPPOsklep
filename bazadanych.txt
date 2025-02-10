@@ -1,9 +1,3 @@
-
-
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS cart;
-DROP TABLE IF EXISTS products;
-
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -11,20 +5,17 @@ CREATE TABLE users (
     roles TEXT[] DEFAULT ARRAY['user']
 );
 
+
+INSERT INTO users (username, password, roles) 
+VALUES ('all', '$2b$12$W5RMyW7B25oTjjZPbyIym.eoRxx0ehAfz/pWlE1K1HF.9HHj2FVnK', ARRAY['admin', 'user']);
+
+SELECT * FROM users;
+
+
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
     image_url TEXT
-);
-ALTER TABLE products ADD COLUMN quantity INT DEFAULT 0;
-
-
-CREATE TABLE cart (
-    id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(id) ON DELETE CASCADE,
-    product_id INT REFERENCES products(id) ON DELETE CASCADE,
-    quantity INT DEFAULT 1,
-    UNIQUE(user_id, product_id)
 );

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizacja zakupu</title>
+    <style>
+        /* Stylizacja formularza */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        .cart-summary {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .cart-summary p {
+            margin: 5px 0;
+        }
+        label {
+            display: block;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="address"], select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Finalizacja zakupu</h2>
+
+        <!-- Podsumowanie koszyka -->
+        <div class="cart-summary">
+            <h3>Twój koszyk:</h3>
+            <% cartItems.forEach(function(item) { %>
+                <p><%= item.name %> - <%= item.quantity %> szt. - <%= (item.price * item.quantity).toFixed(2) %> zł</p>
+            <% }) %>
+            <p><strong>Łączna kwota: </strong><%= totalPrice.toFixed(2) %> zł</p>
+        </div>
+
+        <!-- Formularz zakupu -->
+        <form action="/order" method="POST">
+            <label for="firstName">Imię:</label>
+            <input type="text" id="firstName" name="firstName" required>
+
+            <label for="lastName">Nazwisko:</label>
+            <input type="text" id="lastName" name="lastName" required>
+
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="phone">Telefon:</label>
+            <input type="tel" id="phone" name="phone" required>
+
+            <label for="address">Adres dostawy:</label>
+            <input type="text" id="address" name="address" required>
+
+            <label for="paymentMethod">Metoda płatności:</label>
+            <select id="paymentMethod" name="paymentMethod" required>
+                <option value="card">Karta kredytowa</option>
+                <option value="paypal">PayPal</option>
+                <option value="transfer">Przelew bankowy</option>
+            </select>
+
+            <button type="submit">Zamów</button>
+        </form>
+    </div>
+
+</body>
+</html>

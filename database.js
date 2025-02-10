@@ -5,8 +5,8 @@ const bcrypt = require('bcrypt');
 const pool = new Pool({
     user: 'postgres',       // Zmień, jeśli masz inną nazwę użytkownika
     host: 'localhost',
-    database: 'users',    // Nazwa bazy danych
-    password: 'newpassword', // Twoje hasło do PostgreSQL
+    database: 'usersdb',    // Nazwa bazy danych
+    password: '90603888', // Twoje hasło do PostgreSQL
     port: 5432,
 });
 
@@ -322,6 +322,6 @@ async function getUserByUsername(username) {
     }
 }
 
-module.exports = { registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, getUserCart, getUserByUsername,removeFromCart
+module.exports = { pool, registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, getUserCart, getUserByUsername,removeFromCart
     ,getCartItemById
  };

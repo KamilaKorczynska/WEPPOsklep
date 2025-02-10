@@ -39,6 +39,9 @@
         <p><strong>Łączna cena: 
             <%= cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) %> zł</strong>
         </p>
+        <form action="/checkout" method="GET">
+            <button type="submit" class="checkout-btn">Zamów</button>
+        </form>
     <% } %>
 </div>
 
