@@ -270,22 +270,30 @@ app.post('/cart/add', authorize(), async (req, res) => {
 
 app.post('/cart/update', authorize(), async (req, res) => {
     const { cartItemId, quantity } = req.body;
+    const user = await getUserByUsername(req.signedCookies.user);
     
+    if (!user) {
+        return res.redirect('/login');
+    }
+
     const cartItem = await getCartItemById(cartItemId);
     const product = await getProductById(cartItem.product_id);
     
     if (quantity > product.quantity) {
-        return res.status(400).send('Nie możesz zamówić więcej, niż jest dostępne w magazynie');
-    }
-    
-    const updatedItem = await updateCartItem(cartItemId, quantity);
-    
-    if (!updatedItem) {
-        return res.status(500).send('Błąd aktualizacji koszyka');
+        const cartItems = await getUserCart(user.id);
+        return res.render('cart', { 
+            cartItems, 
+            user: user.username, 
+            role: user.roles, 
+            message: `Nie możesz zamówić więcej niż ${product.quantity} sztuk ${product.name}.` 
+        });
     }
 
+    await updateCartItem(cartItemId, quantity);
     res.redirect('/cart');
 });
+
+
 
 app.post('/cart/remove', authorize(), async (req, res) => {
     const { cartItemId } = req.body; // pobieramy ID przedmiotu
