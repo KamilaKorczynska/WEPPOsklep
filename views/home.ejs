@@ -44,6 +44,14 @@
         <h1>Witaj w naszym sklepie!</h1>
         <p>Sprawdź nasze najnowsze produkty</p>
         <a href="/products">🛍️ Przeglądaj produkty</a>
+      
+
+        <% if (role.includes('admin')) { %>
+            <div>
+                <a href="/users">👥 Przeglądaj użytkowników</a>
+            </div>
+        <% } %>
+        
     </div>
 
     <!-- Stopka -->
