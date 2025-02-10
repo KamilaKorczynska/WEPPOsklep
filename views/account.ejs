@@ -1,22 +1,122 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <title>Strona Główna</title>
-</head>
-<body>
-    
+<%- include('header') %>
 
+<!-- Główna treść strony konta -->
+<div class="account-container">
     <% if (user) { %>
-        <h1>Witaj <%= user %>.</h1>
-        <a href="/home">Home</a>
-        <a href="/changePassword">Zmień hasło</a>
-        <a href="/app">Przejdź do aplikacji</a>
-        <a href="/logout">Wyloguj się</a>
+        <div class="account-info">
+            <h1>Witaj, <%= user %>!</h1>
+            <p class="greeting-message">Zarządzaj swoimi danymi i ustawieniami konta.</p>
+        </div>
 
-    <% } else { %>
-        <h1>Nie jesteś zalogowany.</h1>
-        <a href="/login">Zaloguj się</a>
+        <div class="account-actions">
+            <a href="/changePassword" class="account-link">Zmień hasło</a>
+            <a href="/logout" class="account-link logout">Wyloguj się</a>
+        </div>
     <% } %>
-</body>
-</html>
+        
+</div>
+
+<style>
+    /* Stylizacja konta użytkownika */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body, html {
+        height: 100%;  /* Ustawiamy pełną wysokość */
+        width: 100%;   /* Ustawiamy pełną szerokość */
+        overflow: hidden;  /* Ukrywamy wszelkie paski przewijania */
+    }
+
+    .account-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: top;  /* Wyśrodkowanie kontenera na ekranie */
+        padding: 40px 20px;
+        height: 100%;  /* Zajmuje całą wysokość ekranu */
+        overflow: hidden;  /* Zapobiegamy przewijaniu */
+        flex-shrink: 0;  /* Zapobiega kurczeniu się kontenera */
+    }
+
+    .account-info {
+        text-align: center;
+        margin-bottom: 30px;  /* Zmniejszamy margines dołu */
+    }
+
+    h1 {
+        font-size: 28px;
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .greeting-message {
+        color: #555;
+        font-size: 18px;
+    }
+
+    .account-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .account-link {
+        display: block;
+        text-align: center;
+        padding: 12px 0;
+        margin: 0;
+        font-size: 16px;
+        font-weight: 500;
+        color: #fff;
+        background-color: #6c757d;  /* Szary kolor */
+        border-radius: 4px;
+        text-decoration: none;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .account-link:hover {
+        background-color: #5a6268; /* Ciemniejszy szary dla hover */
+        transform: translateY(-2px);
+    }
+
+    .logout {
+        background-color: #868e96;  /* Ciemniejszy szary na wylogowanie */
+    }
+
+    .logout:hover {
+        background-color: #495057; /* Bardzo ciemny szary */
+    }
+
+    .login {
+        background-color: #adb5bd; /* Jaśniejszy szary */
+    }
+
+    .login:hover {
+        background-color: #6c757d; /* Przejście na ciemniejszy szary */
+    }
+
+    @media (max-width: 768px) {
+        .account-container {
+            padding: 40px 15px;
+        }
+
+        .account-info h1 {
+            font-size: 24px;
+        }
+
+        .account-actions {
+            gap: 15px;
+        }
+
+        .account-link {
+            font-size: 18px;
+            padding: 14px 0;
+        }
+    }
+</style>

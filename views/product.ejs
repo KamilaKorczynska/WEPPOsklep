@@ -1,11 +1,7 @@
 <%- include('header') %>
 
-<!-- Strzałka powrotu do listy produktów -->
-<a href="/products" class="back-to-list">
-    ⬅️
-</a>
+<a href="/products" class="back-to-list">⬅️</a>
 
-<!-- Główna treść produktu -->
 <div class="product-details">
     <div class="product-image">
         <img src="<%= product.image_url %>" alt="<%= product.name %>" class="product-img">
@@ -17,25 +13,20 @@
         <p class="product-price"><strong>Cena:</strong> <%= product.price %> zł</p>
         <p class="product-quantity"><strong>Dostępna ilość:</strong> <%= product.quantity %></p>
 
-        <div class="cart-actions">
-            <form action="/cart/add" method="POST">
-                <input type="hidden" name="product_id" value="<%= product.id %>">
-                <!-- <label for="quantity">Quantity:</label> -->
-                <!-- <input type="number" id="quantity" name="quantity" min="1" max="<%= product.quantity %>" value="1"> -->
-                <button type="submit" class="btn add-to-cart-btn">Dodaj do koszyka</button>
-            </form>
-        </div>
-        
-        <% if (isAdmin) { %>
-            <div class="admin-actions">
-                <a href="/editProduct/<%= product.id %>" class="btn edit-btn">Edytuj</a>
-                <form action="/deleteProduct/<%= product.id %>" method="POST" style="display:inline;">
-                    <button type="submit" class="btn delete-btn">Usuń</button>
+        <% if (product.quantity < 1) { %>
+            <p class="out-of-stock">Produkt jest niedostępny.</p>
+        <% } else { %>
+            <div class="cart-actions">
+                <form action="/cart/add" method="POST">
+                    <input type="hidden" name="product_id" value="<%= product.id %>">
+                    <button type="submit" class="btn add-to-cart-btn">Dodaj do koszyka</button>
                 </form>
             </div>
         <% } %>
     </div>
 </div>
+
+
 
 <!-- Stylowanie -->
 <style>
@@ -154,7 +145,7 @@
     }
 
     .add-to-cart-btn {
-        background-color: #2ecc71;  /* Zielony kolor */
+        background-color: #2ecc71;  
     }
 
     .add-to-cart-btn:hover {

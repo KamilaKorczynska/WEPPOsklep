@@ -2,19 +2,54 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Strona Główna</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sklep Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Główna treść */
+        .content {
+            flex: 1;
+            text-align: center;
+            padding: 50px;
+        }
+
+        /* Stopka */
+        .footer {
+            text-align: center;
+            background: #f4f4f4;
+            padding: 15px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Witaj na stronie głównej!</h1>
-    <a href="/products">Produkty</a></li>
-    <% if (user) { %>
-        <p>Jesteś zalogowany jako <%= user %>.</p>
-        <a href="/account">Moje konto</a>
-        <a href="/app">Przejdź do aplikacji</a>
-        <a href="/logout">Wyloguj się</a>
-    <% } else { %>
-        <p>Nie jesteś zalogowany.</p>
-        <a href="/login">Zaloguj się</a>
-    <% } %>
+
+    <!-- Wczytanie nagłówka -->
+    <%- include('header') %>
+
+    <!-- Główna treść -->
+    <div class="content">
+        <h1>Witaj w naszym sklepie!</h1>
+        <p>Sprawdź nasze najnowsze produkty</p>
+        <a href="/products">🛍️ Przeglądaj produkty</a>
+    </div>
+
+    <!-- Stopka -->
+    <footer class="footer">
+        &copy; 2025 Sklep Online. Wszelkie prawa zastrzeżone.
+    </footer>
+
 </body>
 </html>

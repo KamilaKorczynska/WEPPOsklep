@@ -10,10 +10,22 @@
                 <li>
                     <strong><%= item.name %></strong> - <%= item.quantity %> szt.
                     (Cena: <%= item.price %> zł)
-                    <form action="/cart/delete" method="POST" style="display:inline;">
-                        <input type="hidden" name="product_id" value="<%= item.id %>">
-                        <button type="submit">Usuń</button>
-                    </form>
+                    
+                    <% if (item.error) { %>
+                        <p class="error-message"><%= item.error %></p>
+                    <% } %>
+
+                    <div class="cart-actions">
+                        <form action="/cart/update" method="POST" style="display:inline;">
+                            <input type="hidden" name="cartItemId" value="<%= item.id %>">
+                            <input type="number" name="quantity" min="1" value="<%= item.quantity %>" required>
+                            <button type="submit">Zaktualizuj</button>
+                        </form>
+                        <form action="/cart/remove" method="POST" style="display:inline;">
+                            <input type="hidden" name="cartItemId" value="<%= item.id %>">
+                            <button type="submit">Usuń</button>
+                        </form>
+                    </div>
                 </li>
             <% }) %>
         </ul>
@@ -50,5 +62,38 @@
     }
     button:hover {
         background-color: #c0392b;
+    }
+    .add-to-cart-btn {
+        background-color: #2ecc71;  
+    }
+
+    .add-to-cart-btn:hover {
+        background-color: #27ae60;
+    }
+
+    
+    .edit-btn {
+        background-color: #3498db;
+    }
+
+    .edit-btn:hover {
+        background-color: #2980b9;
+    }
+
+    .delete-btn {
+        background-color: #e74c3c;
+        border: none;
+    }
+
+    .delete-btn:hover {
+        background-color: #c0392b;
+    }
+
+    .add-to-cart-btn {
+        background-color: #2ecc71;  
+    }
+
+    .add-to-cart-btn:hover {
+        background-color: #27ae60;
     }
 </style>
