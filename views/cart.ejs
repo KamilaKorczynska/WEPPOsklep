@@ -1,13 +1,6 @@
 <%- include('header') %>
 
 <h1>Twój Koszyk</h1>
-
-<% if (locals.message) { %>
-    <div class="error-message">
-        <%= locals.message %>
-    </div>
-<% } %>
-
 <div class="cart-container">
     <% if (!cartItems || cartItems.length === 0) { %>
         <p>Twój koszyk jest pusty.</p>
@@ -51,10 +44,6 @@
         border: 1px solid #ddd;
         border-radius: 5px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
-    text-align: center;
-    color: #333;
     }
     ul {
         list-style: none;
@@ -107,31 +96,4 @@
     .add-to-cart-btn:hover {
         background-color: #27ae60;
     }
-
-    .error-message {
-    background-color: #ff4d4d;
-    color: white;
-    padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 6px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 14px;
-    box-shadow: 0 2px 10px rgba(255, 77, 77, 0.3);
-    animation: fadeIn 0.5s ease-in-out;
-    }
-
-
-
-    @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    }
-
 </style>
