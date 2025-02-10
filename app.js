@@ -3,7 +3,7 @@ var authorize = require('./authorize')
 var express = require('express');
 var cookieParser = require('cookie-parser');
 var {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, getUserCart, addToCart, getUserByUsername, updateCartItem, removeFromCart 
-        , getCartItemById
+        , getCartItemById, getAllUsers
 
 } = require('./database');
 
@@ -290,6 +290,17 @@ app.post('/cart/remove', authorize(), async (req, res) => {
     res.redirect('/cart');
 });
 
+// Strona przeglądania użytkowników (dla admina)
+app.get('/users', authorize(), async (req, res) => {
+    const role = await getUserRoles(req.signedCookies.user);
+    
+    if (!role.includes('admin')) {
+        return res.redirect('/home');
+    }
+
+    const users = await getAllUsers();
+    res.render('users', { users, user: req.signedCookies.user, role });
+});
 
 http.createServer(app).listen(3000);
 console.log('serwer działa, nawiguj do http://localhost:3000');

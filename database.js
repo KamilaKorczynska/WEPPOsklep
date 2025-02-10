@@ -65,6 +65,16 @@ async function getUserRoles(username) {
     }
 }
 
+// Pobieranie wszystkich użytkowników
+async function getAllUsers() {
+    try {
+        const result = await pool.query('SELECT * FROM users');
+        return result.rows;
+    } catch (error) {
+        console.error('Błąd pobierania użytkowników:', error);
+        return [];
+    }
+}
 
 // Edytowanie ról użytkownika
 async function editUserRoles(username, newRoles) {
@@ -323,5 +333,5 @@ async function getUserByUsername(username) {
 }
 
 module.exports = { registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, getUserCart, getUserByUsername,removeFromCart
-    ,getCartItemById
+    ,getCartItemById, getAllUsers
  };
