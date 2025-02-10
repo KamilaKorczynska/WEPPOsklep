@@ -2,10 +2,9 @@ var http = require('http');
 var authorize = require('./authorize')  
 var express = require('express');
 var cookieParser = require('cookie-parser');
-var {registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, getUserCart, addToCart, getUserByUsername, updateCartItem, removeFromCart 
-        , getCartItemById, getAllUsers
-
-} = require('./database');
+var {pool, registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, getUserCart, getUserByUsername,removeFromCart
+    ,getCartItemById, getAllUsers } = require('./database');
+//var { pool, getAllUsers, searchProducts, registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem } = require('./database');
 
 var app = express();
 
@@ -121,19 +120,28 @@ app.post('/changePassword', authorize(), async (req, res) => {
 // Strona listy produktów
 app.get('/products', async (req, res) => {
     let role = [];
-    let isAdmin = false; // Dodajemy zmienną do sprawdzenia roli admina
-    
+    let isAdmin = false;
+    let searchQuery = req.query.search ? req.query.search.trim() : ''; // Pobranie i usunięcie białych znaków
+
     if (req.signedCookies.user) {
         role = await getUserRoles(req.signedCookies.user);
-        // Sprawdzamy, czy wśród ról użytkownika jest "admin"
         if (role.includes('admin')) {
             isAdmin = true;
         }
     }
-    
-    const products = await getAllProducts();
-    res.render('products', { products, user: req.signedCookies.user || null, role, isAdmin });
+
+    let products;
+    if (searchQuery) {
+        // Zapytanie SQL zwracające tylko produkty, które zawierają szukane słowo
+        products = await pool.query("SELECT * FROM products WHERE LOWER(name) LIKE LOWER($1)", [`%${searchQuery}%`]);
+        products = products.rows;
+    } else {
+        products = await getAllProducts();
+    }
+
+    res.render('products', { products, user: req.signedCookies.user || null, role, isAdmin, searchQuery });
 });
+
 
 
 // Strona konkretnego produktu
@@ -223,6 +231,25 @@ app.post('/deleteProduct/:id', authorize('admin'), async (req, res) => {
     }
 });
 
+
+
+// Display the cart page
+app.get('/cart', async (req, res) => {
+    try {
+        const user = await getUserByUsername(req.signedCookies.user);
+        
+        if (!user) {
+            return res.redirect('/login');
+        }
+        const cartItems = await getUserCart(user.id); 
+        res.render('cart', { cartItems, user: user.username, role: user.roles });
+    } catch (err) {
+        console.error('Error fetching cart items:', err);
+        res.render('cart', { cartItems: [], user: null, role: null }); 
+    }
+});
+
+
 app.post('/cart/add', authorize(), async (req, res) => {
     const { product_id } = req.body;
     const user = await getUserByUsername(req.signedCookies.user);
@@ -238,25 +265,6 @@ app.post('/cart/add', authorize(), async (req, res) => {
         res.redirect('/cart');
     } catch (error) {
         return res.status(400).send(error.message);
-    }
-});
-
-
-
-
-
-app.get('/cart', async (req, res) => {
-    try {
-        const user = await getUserByUsername(req.signedCookies.user);
-        
-        if (!user) {
-            return res.redirect('/login');
-        }
-        const cartItems = await getUserCart(user.id); 
-        res.render('cart', { cartItems, user: user.username, role: user.roles });
-    } catch (err) {
-        console.error('Error fetching cart items:', err);
-        res.render('cart', { cartItems: [], user: null, role: null }); 
     }
 });
 
@@ -302,5 +310,6 @@ app.get('/users', authorize(), async (req, res) => {
     res.render('users', { users, user: req.signedCookies.user, role });
 });
 
+
 http.createServer(app).listen(3000);
-console.log('serwer działa, nawiguj do http://localhost:3000');
+console.log( 'serwer działa, nawiguj do http://localhost:3000' );

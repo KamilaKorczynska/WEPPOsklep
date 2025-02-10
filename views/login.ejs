@@ -4,6 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Logowanie - Sklep Online</title>
+</head>
+<body>
+
+    <!-- Formularz logowania -->
+    <div id="login-form">
+        <h2>Logowanie</h2>
+        <form method="POST">
+            <div>
+                <input type="text" name="txtUser" placeholder="Nazwa użytkownika" required />
+            </div>
+            <div>
+                <input type="password" name="txtPwd" placeholder="Hasło" required />
+            </div>
+            <div>
+                <button type="submit">Zaloguj się</button>
+            </div>
+
+            <% if (locals.message) { %>
+                <div class="message">
+                    <%= locals.message %>
+                </div>
+            <% } %>
+
+            <div class="register-link">
+                <label>Nie masz konta? </label><a href="/register">Zarejestruj się</a>
+            </div>
+        </form>
+    </div>
+
     <style>
         /* Stylizacja dla całej strony */
         * {
@@ -19,14 +48,6 @@
             align-items: center;
             height: 100vh;
             background-color: #f4f4f9;
-        }
-
-        /* Nagłówek */
-        header {
-            width: 100%;
-            background-color: #333;
-            padding: 15px 30px;
-            color: white;
         }
 
         /* Formularz logowania */
@@ -88,36 +109,7 @@
         .register-link a:hover {
             text-decoration: underline;
         }
-
     </style>
-</head>
-<body>
-
-    <!-- Formularz logowania -->
-    <div id="login-form">
-        <h2>Logowanie</h2>
-        <form method="POST">
-            <div>
-                <input type="text" name="txtUser" placeholder="Nazwa użytkownika" required />
-            </div>
-            <div>
-                <input type="password" name="txtPwd" placeholder="Hasło" required />
-            </div>
-            <div>
-                <button type="submit">Zaloguj się</button>
-            </div>
-
-            <% if (locals.message) { %>
-                <div class="message">
-                    <%= locals.message %>
-                </div>
-            <% } %>
-
-            <div class="register-link">
-                <label>Nie masz konta? </label><a href="/register">Zarejestruj się</a>
-            </div>
-        </form>
-    </div>
 
 </body>
 </html>

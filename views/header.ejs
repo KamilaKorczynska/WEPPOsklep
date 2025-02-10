@@ -39,14 +39,49 @@
             opacity: 0.8;
         }
 
+        /* Pasek wyszukiwania */
+        .search-form {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 5px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid #ccc;
+        }
+
+        .search-input {
+            border: none;
+            outline: none;
+            padding: 8px 12px;
+            font-size: 16px;
+            width: 200px;
+        }
+
+        .search-btn {
+            background: #b4b4b1;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 0 20px 20px 0;
+        }
+
+        .search-btn:hover {
+            background: #ffdb4d;
+        }
+
         .account {
             font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         .account a {
             color: white;
             text-decoration: none;
-            margin-left: 15px;
         }
 
         .account a:hover {
@@ -64,17 +99,25 @@
     <!-- Nawigacja -->
     <nav class="navbar">
         <a href="/" class="logo">🛒 Sklep Online</a>
+
+        <!-- Pasek wyszukiwania -->
+        <form class="search-form" action="/products" method="GET">
+            <input type="text" name="search" class="search-input" placeholder="Szukaj produktów..." required>
+            <button type="submit" class="search-btn">🔍</button>
+        </form>
+
         <div class="account">
             <% if (user) { %>
                 <% if (role && role.includes('admin')) { %>
-                    <span class="admin-label">(admin) </span>
+                    <span class="admin-label">(admin)</span>
                 <% } %>
                 <span><%= user %></span>
-                <a href="/cart">Koszyk</a>
-                <a href="/account">Moje konto</a>
-                <a href="/logout">Wyloguj się</a>
+                <a href="/cart">🛒 Koszyk</a>
+                <a href="/account">👤 Moje konto</a>
+                <a href="/logout">🚪 Wyloguj się</a>
             <% } else { %>
-                <a href="/login">Zaloguj się</a>
+                <a href="/cart">🛒 Koszyk</a>
+                <a href="/login">🔑 Zaloguj się</a>
             <% } %>
         </div>
     </nav>

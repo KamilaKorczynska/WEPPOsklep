@@ -5,8 +5,8 @@ const bcrypt = require('bcrypt');
 const pool = new Pool({
     user: 'postgres',       // Zmień, jeśli masz inną nazwę użytkownika
     host: 'localhost',
-    database: 'users',    // Nazwa bazy danych
-    password: 'newpassword', // Twoje hasło do PostgreSQL
+    database: 'usersdb',    // Nazwa bazy danych
+    password: '90603888', // Twoje hasło do PostgreSQL
     port: 5432,
 });
 
@@ -75,6 +75,7 @@ async function getAllUsers() {
         return [];
     }
 }
+
 
 // Edytowanie ról użytkownika
 async function editUserRoles(username, newRoles) {
@@ -148,29 +149,13 @@ async function getAllProducts() {
     }
 }
 
+// Pobieranie jednego produktu po ID
 async function getProductById(productId) {
     try {
-        const result = await pool.query(
-            'SELECT * FROM products WHERE id = $1',
-            [productId]
-        );
+        const result = await pool.query('SELECT * FROM products WHERE id = $1', [productId]);
         return result.rows[0] || null;
     } catch (error) {
         console.error('Błąd pobierania produktu:', error);
-        return null;
-    }
-}
-
-
-async function getCartItemById(cartItemId) {
-    try {
-        const result = await pool.query(
-            'SELECT * FROM cart WHERE id = $1',
-            [cartItemId]
-        );
-        return result.rows[0] || null;
-    } catch (error) {
-        console.error('Błąd pobierania przedmiotu z koszyka:', error);
         return null;
     }
 }
@@ -214,6 +199,18 @@ async function deleteProduct(id) {
     }
 }
 
+async function getCartItemById(cartItemId) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM cart WHERE id = $1',
+            [cartItemId]
+        );
+        return result.rows[0] || null;
+    } catch (error) {
+        console.error('Błąd pobierania przedmiotu z koszyka:', error);
+        return null;
+    }
+}
 
 async function addToCart(userId, productId, quantity = 1) {
     try {
@@ -253,8 +250,6 @@ async function addToCart(userId, productId, quantity = 1) {
         throw err; 
     }
 }
-
-
 
 async function getUserCart(userId) {
     try {
@@ -318,6 +313,77 @@ async function removeFromCart(cartItemId) {
     }
 }
 
+// Wyszukiwanie produktów
+async function searchProducts(query) {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM products WHERE LOWER(name) LIKE LOWER($1)',
+            [`%${query}%`]  // Szuka produktów zawierających frazę (bez rozróżniania wielkości liter)
+        );
+        return result.rows;
+    } catch (error) {
+        console.error('Błąd wyszukiwania produktów:', error);
+        return [];
+    }
+}
+
+
+async function addToCart(userId, productId, quantity) {
+    const existingItem = await pool.query(
+        `SELECT * FROM cart WHERE user_id = $1 AND product_id = $2`,
+        [userId, productId]
+    );
+
+    console.log('Existing Cart Item:', existingItem.rows); 
+    if (existingItem.rows.length > 0) {
+        await pool.query(
+            `UPDATE cart SET quantity = quantity + $1 WHERE user_id = $2 AND product_id = $3`,
+            [quantity, userId, productId]
+        );
+    } else {
+        await pool.query(
+            `INSERT INTO cart (user_id, product_id, quantity) VALUES ($1, $2, $3)`,
+            [userId, productId, quantity]
+        );
+    }
+    return true;
+    
+}
+
+
+async function getUserCart(userId) {
+    const result = await pool.query(
+        `SELECT c.id, c.quantity, p.name, p.price
+            FROM cart c
+            JOIN products p ON c.product_id = p.id
+            WHERE c.user_id = $1`,
+        [userId]
+    );
+    return result.rows;
+}
+
+async function updateCartItem(userId, productId, quantity) {
+    if (quantity > 0) {
+        await pool.query(
+            `UPDATE cart SET quantity = $1 WHERE user_id = $2 AND product_id = $3`,
+            [quantity, userId, productId]
+        );
+    } else {
+        await pool.query(
+            `DELETE FROM cart WHERE user_id = $1 AND product_id = $2`,
+            [userId, productId]
+        );
+    }
+    return true;
+}
+
+async function removeFromCart(userId, productId) {
+    await pool.query(
+        `DELETE FROM cart WHERE user_id = $1 AND product_id = $2`,
+        [userId, productId]
+    );
+    return true;
+}
 
 async function getUserByUsername(username) {
     try {
@@ -332,6 +398,7 @@ async function getUserByUsername(username) {
     }
 }
 
-module.exports = { registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, getUserCart, getUserByUsername,removeFromCart
+
+module.exports = { pool, registerUser, loginUser, getUserRoles, editUserRoles, changeUserPassword, registerAdmin, getAllProducts, getProductById, addProduct, updateProduct, deleteProduct, addToCart, getUserCart, updateCartItem, getUserCart, getUserByUsername,removeFromCart
     ,getCartItemById, getAllUsers
  };

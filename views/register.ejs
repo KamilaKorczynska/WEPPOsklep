@@ -4,6 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rejestracja - Sklep Online</title>
+</head>
+<body>
+
+    <!-- Formularz rejestracji -->
+    <div id="register-form">
+        <h2>Rejestracja</h2>
+        <form method="POST">
+            <div>
+                <input type="text" name="txtUser" placeholder="Nazwa użytkownika" required />
+            </div>
+            <div>
+                <input type="password" name="txtPwd1" placeholder="Hasło" required />
+            </div>
+            <div>
+                <input type="password" name="txtPwd2" placeholder="Powtórz hasło" required />
+            </div>
+            <div>
+                <button type="submit">Zarejestruj się</button>
+            </div>
+
+            <% if (locals.message) { %>
+                <div class="message">
+                    <%= locals.message %>
+                </div>
+            <% } %>
+
+            <div class="login-link">
+                <label>Masz już konto? </label><a href="/login">Zaloguj się</a>
+            </div>
+        </form>
+    </div>
+
     <style>
         /* Stylizacja dla całej strony */
         * {
@@ -80,39 +112,7 @@
         .login-link a:hover {
             text-decoration: underline;
         }
-
     </style>
-</head>
-<body>
-
-    <!-- Formularz rejestracji -->
-    <div id="register-form">
-        <h2>Rejestracja</h2>
-        <form method="POST">
-            <div>
-                <input type="text" name="txtUser" placeholder="Nazwa użytkownika" required />
-            </div>
-            <div>
-                <input type="password" name="txtPwd1" placeholder="Hasło" required />
-            </div>
-            <div>
-                <input type="password" name="txtPwd2" placeholder="Powtórz hasło" required />
-            </div>
-            <div>
-                <button type="submit">Zarejestruj się</button>
-            </div>
-
-            <% if (locals.message) { %>
-                <div class="message">
-                    <%= locals.message %>
-                </div>
-            <% } %>
-
-            <div class="login-link">
-                <label>Masz już konto? </label><a href="/login">Zaloguj się</a>
-            </div>
-        </form>
-    </div>
 
 </body>
 </html>
